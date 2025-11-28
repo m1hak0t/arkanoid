@@ -1,11 +1,10 @@
 import biuoop.GUI;
 import biuoop.DrawSurface;
-
-import java.sql.Array;
+import biuoop.Sleeper;
 import java.util.Random;
 import java.awt.Color;
 
-public class SimpleGuiExample {
+public class AbstractArtDrawing {
 
     public void drawRandomCircles() {
         Random rand = new Random(); // create a random-number generator
@@ -68,8 +67,5 @@ public class SimpleGuiExample {
         gui.show(d);
 
     }
-    public static void main (String[] args){
-        SimpleGuiExample example = new SimpleGuiExample();
-        example.drawRandomlines();
-    }
+
 }
