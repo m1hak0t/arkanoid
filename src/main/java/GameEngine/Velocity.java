@@ -1,4 +1,6 @@
-// Velocity specifies the change in position on the `x` and the `y` axes.
+package GameEngine;
+
+// GameEngine.Velocity specifies the change in position on the `x` and the `y` axes.
 public class Velocity {
     private double dx;
     private double dy;
@@ -28,4 +30,7 @@ public class Velocity {
     public double getY() {
         return dy;
     }
+    public void reverseX() {this.dx = -dx;}
+    public void reverseY() {this.dy = -dy;}
+
 }

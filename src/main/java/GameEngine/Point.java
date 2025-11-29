@@ -1,3 +1,4 @@
+package GameEngine;
 
 public class Point {
     private double _x;
@@ -32,6 +33,10 @@ public class Point {
         return this._y;
     }
     //return the Y values of this point
-
-
+    public boolean areClose(Point p, double epsilon) {
+        if (this.distance(p) < epsilon) {
+            return true;
+        }
+        return false;
+    }
 }

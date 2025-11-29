@@ -1,5 +1,7 @@
+package GameEngine;
+
 /**
- * This class does some simple tessting of the Point and Line classes.
+ * This class does some simple tessting of the GameEngine.Point and GameEngine.Line classes.
  */
 public class GeometryTester {
 
@@ -16,7 +18,7 @@ public class GeometryTester {
     }
 
     /**
-     * The method is in charge of testing the Point class.
+     * The method is in charge of testing the GameEngine.Point class.
      *
      * @return true if not mistakes were found, false otherwise.
      */
@@ -62,7 +64,7 @@ public class GeometryTester {
     }
 
     /**
-     * The method is in charge of testing the Line class.
+     * The method is in charge of testing the GameEngine.Line class.
      *
      * @return true if not mistakes were found, false otherwise.
      */

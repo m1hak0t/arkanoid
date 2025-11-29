@@ -1,3 +1,5 @@
+package GameEngine;
+
 import biuoop.GUI;
 import biuoop.DrawSurface;
 

@@ -1,77 +1,184 @@
+package GameEngine;
+
+import java.util.ArrayList;
+
 public class Line {
+    private static final double EPSILON = 1e-10;
+
     private Point start;
     private Point end;
-    //defines the _a coefficient in the ax + b exaction
-    private double _m;
-    //defines the _a coefficient in the ax + b exaction
-    private double _b;
+    private boolean isVertical;
+    private double slope;      // Only valid if !isVertical
+    private double intercept;  // Only valid if !isVertical
+
     public Line(Point s, Point e) {
         this.start = s;
         this.end = e;
-        _m = (end.getY()-start.getY())/(end.getX()-start.getX());
-        _b = end.getY()- _m*end.getX();
+        calculateLineEquation();
     }
+
     public Line(double x1, double y1, double x2, double y2) {
-        start = new Point(x1,y1);
-        end = new Point(x2,y2);
-        _m = (end.getY()-start.getY())/(end.getX()-start.getX());
-        _b = end.getY()- _m*end.getX();
+        this.start = new Point(x1, y1);
+        this.end = new Point(x2, y2);
+        calculateLineEquation();
     }
+
+    private void calculateLineEquation() {
+        double dx = end.getX() - start.getX();
+        double dy = end.getY() - start.getY();
+
+        // Check if line is vertical (avoid division by zero)
+        if (Math.abs(dx) < EPSILON) {
+            isVertical = true;
+            slope = 0;      // Not used for vertical lines
+            intercept = 0;  // Not used for vertical lines
+        } else {
+            isVertical = false;
+            slope = dy / dx;
+            intercept = end.getY() - slope * end.getX();//Hello mechina
+        }
+    }
+
     public double length() {
         return start.distance(end);
     }
 
-    // Returns the middle point of the line
     public Point middle() {
-        double new_x = (start.getX() + end.getX())/2;
-        double new_y = (start.getY() + end.getY())/2;
-        Point middlepoint = new Point(new_x, new_y);
-        return middlepoint;
+        double newX = (start.getX() + end.getX()) / 2;
+        double newY = (start.getY() + end.getY()) / 2;
+        return new Point(newX, newY);
     }
 
-    // Returns the start point of the line
     public Point start() {
         return start;
     }
 
-    // Returns the end point of the line
     public Point end() {
         return end;
     }
 
-    // Returns true if the lines intersect, false otherwise
     public boolean isIntersecting(Line other) {
-        if (intersectionWith(other) != null) {
-            return true;
-        }
-        return false;
+        return intersectionWith(other) != null;
     }
-    // Returns the intersection point if the lines intersect,
-    // and null otherwise.
+
     public Point intersectionWith(Line other) {
-        //Let's suppose that the lines are infinite and check whether they have potencial to intersect
-        //If m is equal the lines wont ever intersect
-        if (_m == other._m) {
+        // Case 1: Both lines are vertical
+        if (this.isVertical && other.isVertical) {
+            // Vertical lines are parallel (or overlapping)
+            // Either way, no single intersection point
             return null;
         }
-        //Check where it the intersection point of the infinite lines
-        double x = (_b - other._b)/(other._m - _m);
-        double y = _m*x + _b;
-        //After we got the point let's calculate if this point exists on both lines
-        boolean onfirst = x <= Math.max(start.getX(),end.getX()) && x >= Math.min(start.getX(),end.getX()) && (y <= Math.max(start.getY(),end.getY()) && y >= Math.min(start.getY(),end.getY()));
-        boolean onsecond = x <= Math.max(other.start.getX(),other.end.getX()) && x >= Math.min(other.start.getX(),other.end.getX()) && (y <= Math.max(other.start.getY(),other.end.getY()) && y >= Math.min(other.start.getY(),other.end.getY()));
-        if (onfirst && onsecond) {
-            return new Point(x,y);
+
+        // Case 2: This line is vertical, other is not
+        if (this.isVertical) {
+            return findIntersectionWithVertical(this, other);
         }
+
+        // Case 3: Other line is vertical, this is not
+        if (other.isVertical) {
+            return findIntersectionWithVertical(other, this);
+        }
+
+        // Case 4: Both lines are non-vertical
+        // Check if they are parallel
+        if (Math.abs(this.slope - other.slope) < EPSILON) {
+            return null;  // Parallel lines don't intersect
+        }
+
+        // Calculate intersection point
+        double x = (other.intercept - this.intercept) / (this.slope - other.slope);
+        double y = this.slope * x + this.intercept;
+
+        // Check if intersection point is on both line segments
+        if (isPointOnSegment(x, y) && other.isPointOnSegment(x, y)) {
+            return new Point(x, y);
+        }
+
         return null;
     }
 
-    // equals -- return true is the lines are equal, false otherwise
-    public boolean equals(Line other) {
-        if (start.getY() == other.start.getY() && start.getX() == other.start.getX()) {
-            return true;
+    /**
+     * Find intersection between a vertical line and a non-vertical line
+     */
+    private static Point findIntersectionWithVertical(Line vertical, Line nonVertical) {
+        double x = vertical.start.getX();  // x-coordinate is fixed for vertical line
+        double y = nonVertical.slope * x + nonVertical.intercept;
+
+        // Check if this point is on both segments
+        if (vertical.isPointOnSegment(x, y) && nonVertical.isPointOnSegment(x, y)) {
+            return new Point(x, y);
         }
-        return false;
+
+        return null;
     }
+
+    /**
+     * Check if a point (x, y) lies on this line segment
+     */
+    public boolean isPointOnSegment(double x, double y) {
+        double minX = Math.min(start.getX(), end.getX());
+        double maxX = Math.max(start.getX(), end.getX());
+        double minY = Math.min(start.getY(), end.getY());
+        double maxY = Math.max(start.getY(), end.getY());
+
+        return (x >= minX - EPSILON && x <= maxX + EPSILON &&
+                y >= minY - EPSILON && y <= maxY + EPSILON);
+    }
+
+    /**
+     * Check if two lines are equal (same start and end points, in any order)
+     */
+    public boolean equals(Line other) {
+        if (other == null) {
+            return false;
+        }
+
+        // Check if lines have same endpoints (in same order)
+        boolean sameOrder = start.equals(other.start) && end.equals(other.end);
+
+        // Check if lines have same endpoints (in reverse order)
+        boolean reverseOrder = start.equals(other.end) && end.equals(other.start);
+
+        return sameOrder || reverseOrder;
+    }
+
+    // Getters for debugging/testing
+    public boolean isVertical() {
+        return isVertical;
+    }
+
+    public double getSlope() {
+        return isVertical ? Double.POSITIVE_INFINITY : slope;
+    }
+
+    public double getIntercept() {
+        return intercept;
+    }
+    // If this line does not intersect with the rectangle, return null.
+    // Otherwise, return the closest intersection point to the
+    // start of the line.
+    public Point closestIntersectionToStartOfLine(Rectangle rect) {
+        if (rect.intersectionPoints(this).isEmpty()) {
+            return null;
+        }
+        //Generate the list of the intersection points
+        java.util.List<Point> intersections = rect.intersectionPoints(this);
+
+        return closestPointToStartGroupOfPoints(intersections);
+    }
+    public Point closestPointToStartGroupOfPoints(java.util.List<Point> group) {
+        double mindistance = 400;
+        int minimal_index =0 ;
+        int i = 0;
+        for (Point p: group) {
+            if (this.start().distance(p) < mindistance) {
+                mindistance = this.start().distance(p);
+                minimal_index = i;
+            }
+            i++;
+        }
+        return group.get(minimal_index);
+    }
+
 
 }
