@@ -5,7 +5,7 @@ import biuoop.DrawSurface;
 import java.util.ArrayList;
 
 public class Rectangle {
-    private Point r_upperleft;
+    public Point r_upperleft;
     private Point r_upperright;
     private Point r_downleft;
     private Point r_downright;
@@ -32,6 +32,19 @@ public class Rectangle {
         this.left_wall = new Line(r_upperleft, r_downleft);
         this.right_wall = new Line(r_downright, r_upperright);
         lines = new Line[]{cealing, floor, left_wall, right_wall};
+    }
+    public void MoveToSpecificPoint(Point p) {
+        this.r_upperleft = p;
+        this.r_upperright = new Point(this.r_upperleft.getX() + r_width, r_upperleft.getY());
+        this.r_downleft = new Point(r_upperleft.getX(), r_upperleft.getY() + r_height);
+        this.r_downright = new Point(r_upperleft.getX() + r_width, r_upperleft.getY() + r_height);
+        //Calculate the lines that define this rectangle
+        this.cealing = new Line(r_upperleft, r_upperright);
+        this.floor = new Line(r_downleft, r_downright);
+        this.left_wall = new Line(r_upperleft, r_downleft);
+        this.right_wall = new Line(r_downright, r_upperright);
+        lines = new Line[]{cealing, floor, left_wall, right_wall};
+
     }
 
     // Return a (possibly empty) List of intersection points

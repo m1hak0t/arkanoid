@@ -1,8 +1,9 @@
 package GameEngine;
 
+import Interfaces.Sprite;
 import biuoop.DrawSurface;
 
-public class Ball {
+public class Ball implements Sprite {
     private Point center;
     private int r;
     private java.awt.Color color;
@@ -55,6 +56,11 @@ public class Ball {
     surface.fillCircle((int) this.center.getX(),(int) this.center.getY(),r);
     }
 
+    @Override
+    public void timePassed() {
+        moveOneStep();
+    }
+
     public void setVelocity(Velocity v) {
         velocity = v;
         traj = calculate_trajectory();
@@ -103,12 +109,15 @@ public class Ball {
             if (center.areClose(collisionpoint, this.r + 3)) {
                 Velocity v = collision.object.hit(collisionpoint,this.velocity);
                 this.velocity = v;
+                /// Remove the block one collided
             }
         }
         this.center = this.getVelocity().applyToPoint(this.center);
         updateColorByDirection();
         updateColorCyclic();
 
+    }
+    private void deleteBlock (Block s) {
     }
 
     //Method that would calculate the trajectory based on the given velocity

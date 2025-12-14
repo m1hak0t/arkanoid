@@ -1,11 +1,12 @@
 package Tests;
 
 import GameEngine.*;
+import GameEngine.Line;
+import GameEngine.Point;
 import Interfaces.Collidable;
 import org.junit.Test;
 import org.junit.Before;
 import static org.junit.Assert.*;
-import java.awt.Color;
 
 public class GameEnvironmentTest {
 

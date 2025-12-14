@@ -25,7 +25,6 @@ public class AbstractArtDrawing {
     }
     public void drawRandomlines() {
         Random rand = new Random();
-        //Create a window
         GUI gui = new GUI("Random Lines", 400, 300);
         DrawSurface d = gui.getDrawSurface();
 

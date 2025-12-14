@@ -1,4 +1,7 @@
-package GameEngine;
+package Tests;
+
+import GameEngine.Line;
+import GameEngine.Point;
 
 /**
  * This class does some simple tessting of the GameEngine.Point and GameEngine.Line classes.

@@ -4,16 +4,29 @@ package GameEngine;
 public class Velocity {
     private double dx;
     private double dy;
+    private double speed;
 
     // constructor
     public Velocity(double dx, double dy) {
         this.dx = dx;
         this.dy = dy;
+        speed = Math.sqrt(dx*dx+dy*dy);
     }
-    public static Velocity fromAngleAndSpeed(double angle, double speed) {
-        double dx = speed;
-        double dy = speed;
-        return new Velocity(dx  * Math.cos(angle), dy * Math.sin(angle));
+    public static Velocity fromAngleAndSpeed(double angleDegrees, double speed) {
+        // 1. Convert degrees to radians for the Trig functions
+        double angleRadians = Math.toRadians(angleDegrees);
+
+        // 2. Calculate components (v * cos(theta), v * sin(theta))
+        double vx = speed * Math.cos(angleRadians);
+        double vy = speed * Math.sin(angleRadians);
+
+        return new Velocity(vx, vy);
+    }
+
+    // Inside your Velocity class:
+    public double getSpeed() {
+        // 3. Calculate magnitude dynamically so it never gets out of sync with dx/dy
+        return Math.hypot(dx, dy);
     }
 
     // Take a point with position (x,y) and return a new point

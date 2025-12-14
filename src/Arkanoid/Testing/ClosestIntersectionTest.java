@@ -1,5 +1,7 @@
 package Tests;
 import GameEngine.*;
+import GameEngine.Line;
+import GameEngine.Point;
 
 public class ClosestIntersectionTest {
 

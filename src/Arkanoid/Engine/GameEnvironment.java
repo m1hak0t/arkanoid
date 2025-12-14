@@ -7,8 +7,13 @@ public class GameEnvironment {
    private ArrayList<Collidable> collidables = new ArrayList<>();
 
    // add the given collidable to the environment.
+
+
    public void addCollidable(Collidable c) {
       collidables.add(c);
+   }
+   public void removeCollidable(Collidable c) {
+      collidables.remove(c);
    }
 
    // Assume an object moving from line.start() to line.end().

@@ -1,5 +1,7 @@
-package GameEngine;
+package Tests;
 
+import GameEngine.Ball;
+import GameEngine.Point;
 import biuoop.GUI;
 import biuoop.DrawSurface;
 

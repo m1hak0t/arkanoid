@@ -1,7 +1,5 @@
 package GameEngine;
 
-import java.util.ArrayList;
-
 public class Line {
     private static final double EPSILON = 1e-10;
 

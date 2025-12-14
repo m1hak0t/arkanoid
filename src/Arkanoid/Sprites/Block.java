@@ -1,19 +1,19 @@
 package GameEngine;
 
-import Interfaces.Collidable;
+import Interfaces.*;
 import biuoop.DrawSurface;
 
 import java.awt.*;
 
-public class Block implements Collidable {
-    private Rectangle shape;
+public class Block implements Collidable,Sprite {
+    protected Rectangle shape;
     private Color color;
 
     public Block (Point upperleft, double width, double height) {
         this.shape = new Rectangle(upperleft,width,height);
     }
     // Constructor with color
-    public Block(Point upperleft, double width, double height, Color color) {
+    public Block(GameEngine.Point upperleft, double width, double height, Color color) {
         this.shape = new Rectangle(upperleft, width, height);
         this.color = color;
     }
@@ -46,13 +46,19 @@ public class Block implements Collidable {
                 (int) shape.getHeight()
         );
     }
+
+    @Override
+    public void timePassed() {
+
+    }
+
     @Override
     public Rectangle getCollisionRectangle() {
         return this.shape;
     }
 
     @Override
-    public Velocity hit(Point collisionPoint, Velocity currentVelocity) {
+    public Velocity hit(GameEngine.Point collisionPoint, Velocity currentVelocity) {
         ///If the collisionpoint is the part of the vertical wall on the left wall of the block
         Line myleftwall = shape.getLeft_wall();
         if (myleftwall.isPointOnSegment(collisionPoint.getX(),collisionPoint.getY())) {
@@ -77,7 +83,12 @@ public class Block implements Collidable {
             currentVelocity.reverseY();
             return currentVelocity;
         }
+        disappear();
         return currentVelocity;
+    }
+
+    public void disappear () {
+        this.shape = null;
     }
 
 }

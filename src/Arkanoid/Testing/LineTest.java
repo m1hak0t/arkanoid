@@ -1,7 +1,6 @@
 package Tests;
-import GameEngine.*;
-
-import java.util.List;
+import GameEngine.Line;
+import GameEngine.Point;
 
 public class LineTest {
 
