@@ -1,5 +1,8 @@
-package GameEngine;
+package Arkanoid.Testing;
 
+import Arkanoid.Engine.Ball;
+import Arkanoid.Engine.Velocity;
+import Arkanoid.Shapes.Point;
 import biuoop.DrawSurface;
 import biuoop.GUI;
 import biuoop.Sleeper;

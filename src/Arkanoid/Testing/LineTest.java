@@ -1,6 +1,8 @@
-package Tests;
-import GameEngine.Line;
-import GameEngine.Point;
+package Arkanoid.Testing;
+
+
+import Arkanoid.Shapes.Line;
+import Arkanoid.Shapes.Point;
 
 public class LineTest {
 

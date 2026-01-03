@@ -1,7 +1,7 @@
-package Tests;
-import GameEngine.*;
-
-import GameEngine.Point;
+package Testing;
+import Arkanoid.Engine.Ball;
+import Arkanoid.Engine.Velocity;
+import Arkanoid.Shapes.Point;
 import org.junit.Test;
 import org.junit.Before;
 import static org.junit.Assert.*;

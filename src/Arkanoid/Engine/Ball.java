@@ -1,10 +1,13 @@
-package GameEngine;
-
-import Interfaces.Sprite;
+package Arkanoid.Engine;
+import Arkanoid.Interfaces.Sprite;
+import Arkanoid.Shapes.Line;
+import Arkanoid.Shapes.Point;
+import Arkanoid.Sprites.Block;
 import biuoop.DrawSurface;
+import java.util.List;
 
 public class Ball implements Sprite {
-    private Point center;
+    private Arkanoid.Shapes.Point center;
     private int r;
     private java.awt.Color color;
     private Velocity velocity;
@@ -107,7 +110,7 @@ public class Ball implements Sprite {
             //If the expected collision point and the ball coordinates
             //It also passes it's radius to define what is "close" :)
             if (center.areClose(collisionpoint, this.r + 3)) {
-                Velocity v = collision.object.hit(collisionpoint,this.velocity);
+                Velocity v = collision.object.hit(this,collisionpoint,this.velocity);
                 this.velocity = v;
                 /// Remove the block one collided
             }

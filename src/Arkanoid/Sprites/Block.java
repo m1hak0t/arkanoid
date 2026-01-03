@@ -1,19 +1,33 @@
-package GameEngine;
-
-import Interfaces.*;
+package Arkanoid.Sprites;
+import Arkanoid.Engine.Ball;
+import Arkanoid.Interfaces.HitListener;
+import Arkanoid.Interfaces.HitNotifier;
+import Arkanoid.Engine.Velocity;
+import Arkanoid.Interfaces.Collidable;
+import Arkanoid.Interfaces.Sprite;
+import Arkanoid.Shapes.Rectangle;
+import Arkanoid.Shapes.Point;
+import Arkanoid.Shapes.Line;
+import Arkanoid.Interfaces.HitListener;
 import biuoop.DrawSurface;
+import java.util.List;
 
 import java.awt.*;
+import java.util.ArrayList;
 
-public class Block implements Collidable,Sprite {
-    protected Rectangle shape;
+
+public class Block implements Collidable, Sprite, HitNotifier {
+    public Rectangle shape;
     private Color color;
+    private List<HitListener> hitListeners = new ArrayList<>();
+    boolean makes_balls_disappear = false;
+
 
     public Block (Point upperleft, double width, double height) {
         this.shape = new Rectangle(upperleft,width,height);
     }
     // Constructor with color
-    public Block(GameEngine.Point upperleft, double width, double height, Color color) {
+    public Block(Point upperleft, double width, double height, Color color) {
         this.shape = new Rectangle(upperleft, width, height);
         this.color = color;
     }
@@ -46,6 +60,16 @@ public class Block implements Collidable,Sprite {
                 (int) shape.getHeight()
         );
     }
+    private void notifyHit(Ball hitter) {
+
+            //System.out.println("Notify hit called");
+            // Make a copy of the hitListeners before iterating over them.
+            List<HitListener> listeners = new ArrayList<HitListener>(this.hitListeners);
+            // Notify all listeners about a hit event
+            for (HitListener hl : listeners) {
+                hl.hitEvent(this, hitter);
+            }
+    }
 
     @Override
     public void timePassed() {
@@ -58,7 +82,8 @@ public class Block implements Collidable,Sprite {
     }
 
     @Override
-    public Velocity hit(GameEngine.Point collisionPoint, Velocity currentVelocity) {
+    public Velocity hit(Ball hitter, Point collisionPoint, Velocity currentVelocity) {
+        notifyHit(hitter);
         ///If the collisionpoint is the part of the vertical wall on the left wall of the block
         Line myleftwall = shape.getLeft_wall();
         if (myleftwall.isPointOnSegment(collisionPoint.getX(),collisionPoint.getY())) {
@@ -83,12 +108,27 @@ public class Block implements Collidable,Sprite {
             currentVelocity.reverseY();
             return currentVelocity;
         }
-        disappear();
         return currentVelocity;
     }
 
-    public void disappear () {
-        this.shape = null;
+
+    @Override
+    public void addHitListener(HitListener hl) {
+        hitListeners.add(hl);
+        System.out.println("Listener added");
+        System.out.println(hitListeners);
     }
 
+    @Override
+    public void removeHitListener(HitListener hl) {
+        hitListeners.remove(hl);
+    }
+
+    public void make_deadly_for_balls() {
+        makes_balls_disappear = true;
+    }
+
+    public boolean ifmakesballsdisappear() {
+        return makes_balls_disappear;
+    }
 }

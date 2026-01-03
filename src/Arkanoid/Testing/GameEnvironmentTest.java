@@ -1,9 +1,13 @@
-package Tests;
+package Arkanoid.Testing;
 
-import GameEngine.*;
-import GameEngine.Line;
-import GameEngine.Point;
-import Interfaces.Collidable;
+import Arkanoid.Engine.Ball;
+import Arkanoid.Engine.CollisionInfo;
+import Arkanoid.Engine.GameEnvironment;
+import Arkanoid.Engine.Velocity;
+import Arkanoid.Interfaces.Collidable;
+import Arkanoid.Shapes.Line;
+import Arkanoid.Shapes.Point;
+import Arkanoid.Shapes.Rectangle;
 import org.junit.Test;
 import org.junit.Before;
 import static org.junit.Assert.*;
@@ -28,8 +32,9 @@ public class GameEnvironmentTest {
             return rect;
         }
 
+
         @Override
-        public Velocity hit(Point collisionPoint, Velocity currentVelocity) {
+        public Velocity hit(Ball hitter, Point collisionPoint, Velocity currentVelocity) {
             // Simple bounce - reverse velocity
             return new Velocity(-currentVelocity.getX(), -currentVelocity.getY());
         }

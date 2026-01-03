@@ -1,5 +1,8 @@
-package GameEngine;
-import Interfaces.Collidable;
+package Arkanoid.Engine;
+
+import Arkanoid.Interfaces.Collidable;
+import Arkanoid.Shapes.Point;
+
 public class CollisionInfo {
    Point collision = null;
    Collidable object = null;

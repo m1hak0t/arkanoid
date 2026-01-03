@@ -1,7 +1,6 @@
-package GameEngine;
+package Arkanoid.Engine;
 
-import Interfaces.Collidable;
-import Interfaces.Sprite;
+import Arkanoid.Interfaces.Sprite;
 import biuoop.DrawSurface;
 
 import java.util.ArrayList;
@@ -18,7 +17,8 @@ public class SpriteCollection {
 
    // call timePassed() on all spritelist.
    public void notifyAllTimePassed() {
-      for (Sprite s :spritelist) {
+      ArrayList<Sprite> copy = new ArrayList<>(spritelist);
+      for (Sprite s :copy) {
          s.timePassed();
       }
 

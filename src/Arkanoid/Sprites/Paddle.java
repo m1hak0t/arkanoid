@@ -1,7 +1,13 @@
-package GameEngine;
+package Arkanoid.Sprites;
 
+import Arkanoid.Engine.Ball;
+import Arkanoid.Engine.Velocity;
+import Arkanoid.Shapes.*;
+import Arkanoid.Shapes.Point;
 import biuoop.GUI;
-import java.awt.*;
+
+import java.awt.Color;
+
 
 public class Paddle extends Block {
     double MOVESPEED = 10;
@@ -9,6 +15,7 @@ public class Paddle extends Block {
     Velocity v_right = new Velocity(MOVESPEED, 0);
     GUI gui;
     biuoop.KeyboardSensor keyboard;
+
 
     public Paddle(double width, double height, Color color, GUI gui) {
         super(
@@ -22,7 +29,7 @@ public class Paddle extends Block {
     }
 
     public void moveOneStepLeft() {
-        GameEngine.Point p = super.shape.r_upperleft;
+        Point p = super.shape.r_upperleft;
         super.shape.MoveToSpecificPoint(v_left.applyToPoint(p));
     }
 
@@ -46,7 +53,7 @@ public class Paddle extends Block {
     }
 
     @Override
-    public Velocity hit(GameEngine.Point collisionPoint, Velocity currentVelocity) {
+    public Velocity hit(Ball hitter, Point collisionPoint, Velocity currentVelocity) {
         Line leftWall = shape.getLeft_wall();
         Line rightWall = shape.getRight_wall();
         Line ceiling = shape.getCealing();

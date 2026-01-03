@@ -1,4 +1,4 @@
-package Interfaces;
+package Arkanoid.Interfaces;
 
 import biuoop.DrawSurface;
 

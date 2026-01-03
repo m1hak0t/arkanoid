@@ -1,10 +1,18 @@
-package GameEngine;
+package Arkanoid;
 
 import java.awt.Color;
 
-import Interfaces.Collidable;
-import Interfaces.Sprite;
+import Arkanoid.Interfaces.Collidable;
+import Arkanoid.Interfaces.Sprite;
+
+import Arkanoid.Shapes.Point;
+import Arkanoid.Sprites.Block;
+import Arkanoid.Sprites.Paddle;
+import Arkanoid.Testing.PrintingHitListener;
+import biuoop.DrawSurface;
 import biuoop.GUI;
+import Arkanoid.Engine.*;
+
 
 public class Game {
    private SpriteCollection sprites;
@@ -12,6 +20,13 @@ public class Game {
    private GUI gui;
    private int width;
    private int height;
+   private Arkanoid.Engine.Counter remainingblocks = new Counter();
+   private Arkanoid.Engine.Counter remainingballs = new Counter();
+   private Arkanoid.Engine.Counter scorecounter = new Counter();
+   private BlockRemover listener = new BlockRemover(this,remainingblocks);
+   private BallCollection ballCollection = new BallCollection();
+   private PrintingHitListener print_listener = new PrintingHitListener();
+   private BallRemover ballremover = new BallRemover(this, remainingballs);
 
    public Game(int width, int height) {
       this.width = width;
@@ -25,12 +40,11 @@ public class Game {
       sprites.addSprite(s);
    }
 
-
    public void addCollidable(Collidable c) {
       environment.addCollidable(c);
    }
 
-   public void removeColldable(Collidable c) {
+   public void removeCollidable(Collidable c) {
       environment.removeCollidable(c);
    }
 
@@ -46,20 +60,29 @@ public class Game {
       if (s instanceof Collidable) {
          addCollidable((Collidable) s);
       }
+      if (s instanceof Ball) {
+         ballCollection.addBall((Ball) s);
+      }
    }
 
    public void removeFromGame(Sprite s) {
       // remove as sprite
       removeSprite(s);
-
-      // Check if it's also Collidable before adding
       if (s instanceof Collidable) {
-         removeColldable((Collidable) s);
+         removeCollidable((Collidable) s);
+      }
+      if (s instanceof Ball) {
+         ballCollection.removeBall((Ball) s);
       }
    }
 
+   public void addScore(int i) {
+      scorecounter.increase(i);
+   }
 
    public void initialize() {
+      //Create a listener
+
       // Screen dimensions
       final int SCREEN_WIDTH = width;
       final int SCREEN_HEIGHT = height;
@@ -88,6 +111,8 @@ public class Game {
               pastelLavender
       );
       this.addToGame(topWall);
+      //topWall.addHitListener(listener);
+
 
       // Left wall
       Block leftWall = new Block(
@@ -97,6 +122,7 @@ public class Game {
               pastelPeriwinkle
       );
       this.addToGame(leftWall);
+      //leftWall.addHitListener(listener);
 
       // Right wall
       Block rightWall = new Block(
@@ -106,6 +132,7 @@ public class Game {
               pastelPeriwinkle
       );
       this.addToGame(rightWall);
+      //rightWall.addHitListener(listener);
 
       // Bottom wall
       Block bottomWall = new Block(
@@ -115,6 +142,10 @@ public class Game {
               pastelLavender
       );
       this.addToGame(bottomWall);
+      //Make a wall deadly for balls
+      bottomWall.make_deadly_for_balls();
+      bottomWall.addHitListener(ballremover);
+      //bottomWall.addHitListener(listener);
 
       // --- Create Brick Layout ---
 
@@ -176,9 +207,11 @@ public class Game {
       this.addToGame(paddle);
 
       // --- Create Ball ---
-      Ball ball = new Ball(new Point(640, 400), 10, pastelRose,environment);  // Rose pink ball
-      ball.setVelocity(Velocity.fromAngleAndSpeed(90, 5));  // Start moving up
-      this.addToGame(ball);
+      for (int i = 0; i < 3; i++) {
+         Ball ball = new Ball(new Point(640 + 10* i, 400 + i), 10, pastelRose, environment);  // Rose pink ball
+         ball.setVelocity(Velocity.fromAngleAndSpeed(90 + 10 * i, 5));  // Start moving up
+         this.addToGame(ball);
+      }
    }
 
    /**
@@ -192,8 +225,20 @@ public class Game {
                  width,
                  height,
                  colors[i]
+
          );
+         brick.addHitListener(listener);
          this.addToGame(brick);
+         remainingblocks.increase(1);
+      }
+   }
+
+   private void update_score(DrawSurface d,Counter counter) {
+      String message = "SCORE: " + counter.getValue();
+      d.setColor(Color.black);
+      d.drawText(30, 45, message, 20);
+      if (remainingblocks.getValue() == 0) {
+         counter.increase(100);
       }
    }
 
@@ -213,6 +258,7 @@ public class Game {
          d.setColor(Color.BLUE);  // Blue background
          d.fillRectangle(0, 0, width, height);
 
+         update_score(d,scorecounter);
          sprites.drawAllOn(d);
          gui.show(d);
 
@@ -224,6 +270,16 @@ public class Game {
          long milliSecondLeftToSleep = millisecondsPerFrame - usedTime;
          if (milliSecondLeftToSleep > 0) {
             sleeper.sleepFor(milliSecondLeftToSleep);
+         }
+         //Close the game if all the blocks are done
+         if (remainingblocks.getValue() == 0) {
+            gui.close();
+            break;
+         }
+         //Close the game if there are no balls
+         if (ballCollection.get_amount() == 0)  {
+            gui.close();
+            break;
          }
       }
    }

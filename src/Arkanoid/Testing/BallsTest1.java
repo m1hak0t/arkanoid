@@ -1,11 +1,11 @@
-package Tests;
+package Arkanoid.Testing;
 
-import GameEngine.Ball;
-import GameEngine.Point;
+import Arkanoid.Engine.Ball;
+import Arkanoid.Shapes.Point;
 import biuoop.GUI;
 import biuoop.DrawSurface;
 
-import java.awt.*;
+import java.awt.Color;
 
 
 public class BallsTest1 {

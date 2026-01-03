@@ -1,4 +1,4 @@
-package GameEngine;
+package Arkanoid.Shapes;
 
 public class Point {
     private double _x;

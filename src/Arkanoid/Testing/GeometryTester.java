@@ -1,7 +1,7 @@
-package Tests;
+package Arkanoid.Testing;
 
-import GameEngine.Line;
-import GameEngine.Point;
+import Arkanoid.Shapes.Line;
+import Arkanoid.Shapes.Point;
 
 /**
  * This class does some simple tessting of the GameEngine.Point and GameEngine.Line classes.

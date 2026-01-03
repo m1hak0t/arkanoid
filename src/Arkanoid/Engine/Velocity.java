@@ -1,4 +1,6 @@
-package GameEngine;
+package Arkanoid.Engine;
+
+import Arkanoid.Shapes.Point;
 
 // GameEngine.Velocity specifies the change in position on the `x` and the `y` axes.
 public class Velocity {

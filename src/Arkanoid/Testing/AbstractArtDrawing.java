@@ -1,5 +1,7 @@
-package GameEngine;
+package Arkanoid.Testing;
 
+import Arkanoid.Shapes.Line;
+import Arkanoid.Shapes.Point;
 import biuoop.GUI;
 import biuoop.DrawSurface;
 

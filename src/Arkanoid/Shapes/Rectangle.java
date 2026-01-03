@@ -1,5 +1,4 @@
-package GameEngine;
-
+package Arkanoid.Shapes;
 import biuoop.DrawSurface;
 
 import java.util.ArrayList;

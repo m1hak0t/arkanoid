@@ -1,4 +1,4 @@
-package GameEngine;
+package Arkanoid.Shapes;
 
 public class Line {
     private static final double EPSILON = 1e-10;

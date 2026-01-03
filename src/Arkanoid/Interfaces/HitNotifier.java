@@ -1,4 +1,4 @@
-package Arkanoid.Engine;
+package Arkanoid.Interfaces;
 
 public interface HitNotifier {
    // Add hl as a listener to hit events.

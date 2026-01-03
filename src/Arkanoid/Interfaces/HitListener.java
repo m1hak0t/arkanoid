@@ -1,5 +1,6 @@
-package Arkanoid.Engine;
+package Arkanoid.Interfaces;
 
+import Arkanoid.Engine.Ball;
 import Arkanoid.Sprites.Block;
 
 public interface HitListener {

@@ -1,5 +1,9 @@
-package GameEngine;
-import Interfaces.Collidable;
+package Arkanoid.Engine;
+
+import Arkanoid.Interfaces.Collidable;
+import Arkanoid.Shapes.Line;
+import Arkanoid.Shapes.Point;
+import Arkanoid.Shapes.Rectangle;
 
 import java.util.ArrayList;
 

@@ -1,7 +1,8 @@
-package Tests;
-import GameEngine.*;
-import GameEngine.Line;
-import GameEngine.Point;
+package Arkanoid.Testing;
+
+import Arkanoid.Shapes.Line;
+import Arkanoid.Shapes.Point;
+import Arkanoid.Shapes.Rectangle;
 
 public class ClosestIntersectionTest {
 
