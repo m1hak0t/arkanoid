@@ -2,6 +2,7 @@ package Arkanoid;
 
 import java.awt.Color;
 
+import Arkanoid.Interfaces.Animation;
 import Arkanoid.Interfaces.Collidable;
 import Arkanoid.Interfaces.Sprite;
 
@@ -10,14 +11,13 @@ import Arkanoid.Sprites.Block;
 import Arkanoid.Sprites.Paddle;
 import Arkanoid.Testing.PrintingHitListener;
 import biuoop.DrawSurface;
-import biuoop.GUI;
 import Arkanoid.Engine.*;
+import biuoop.KeyboardSensor;
 
 
-public class Game {
+public class GameLevel implements Animation {
    private SpriteCollection sprites;
    private GameEnvironment environment;
-   private GUI gui;
    private int width;
    private int height;
    private Arkanoid.Engine.Counter remainingblocks = new Counter();
@@ -27,13 +27,18 @@ public class Game {
    private BallCollection ballCollection = new BallCollection();
    private PrintingHitListener print_listener = new PrintingHitListener();
    private BallRemover ballremover = new BallRemover(this, remainingballs);
+   //private biuoop.DrawSurface d = gui.getDrawSurface();
+   private boolean running = true;
+   private KeyboardSensor keyboard; // <--- Add this field
+   private AnimationRunner runner;
 
-   public Game(int width, int height) {
+   public GameLevel(int width, int height, AnimationRunner runner, KeyboardSensor ks) {
       this.width = width;
       this.height = height;
       this.sprites = new SpriteCollection();
       this.environment = new GameEnvironment();
-      this.gui = new GUI("Arkanoid", width, height);
+      this.keyboard = ks;
+      this.runner = runner;
    }
 
    public void addSprite(Sprite s) {
@@ -86,7 +91,7 @@ public class Game {
       // Screen dimensions
       final int SCREEN_WIDTH = width;
       final int SCREEN_HEIGHT = height;
-      final int WALL_THICKNESS = 25;
+      final int WALL_THICKNESS = 10;
 
       // --- Pastel Color Palette ---
       Color pastelLavender = Color.decode("#E6E6FA");   // Soft lavender
@@ -203,11 +208,11 @@ public class Game {
 
       // --- Create Paddle ---
       Paddle paddle = new Paddle(SCREEN_WIDTH, SCREEN_HEIGHT,
-              pastelPeach, gui);
+              pastelPeach, keyboard);
       this.addToGame(paddle);
 
       // --- Create Ball ---
-      for (int i = 0; i < 3; i++) {
+      for (int i = 0; i < 25; i++) {
          Ball ball = new Ball(new Point(640 + 10* i, 400 + i), 10, pastelRose, environment);  // Rose pink ball
          ball.setVelocity(Velocity.fromAngleAndSpeed(90 + 10 * i, 5));  // Start moving up
          this.addToGame(ball);
@@ -245,42 +250,38 @@ public class Game {
    /**
     * Run the game -- start the animation loop
     */
-   public void run() {
-      biuoop.Sleeper sleeper = new biuoop.Sleeper();
-      int framesPerSecond = 60;
-      int millisecondsPerFrame = 1000 / framesPerSecond;
 
-      while (true) {
-         long startTime = System.currentTimeMillis();
 
-         // Draw everything
-         biuoop.DrawSurface d = gui.getDrawSurface();
-         d.setColor(Color.BLUE);  // Blue background
-         d.fillRectangle(0, 0, width, height);
+   @Override
+   public void doOneFrame(DrawSurface d) {
+      d.setColor(Color.BLUE);  // Blue background
+      d.fillRectangle(0, 0, width, height);
 
-         update_score(d,scorecounter);
-         sprites.drawAllOn(d);
-         gui.show(d);
-
-         // Notify all sprites that time has passed
-         sprites.notifyAllTimePassed();
-
-         // Timing
-         long usedTime = System.currentTimeMillis() - startTime;
-         long milliSecondLeftToSleep = millisecondsPerFrame - usedTime;
-         if (milliSecondLeftToSleep > 0) {
-            sleeper.sleepFor(milliSecondLeftToSleep);
-         }
-         //Close the game if all the blocks are done
-         if (remainingblocks.getValue() == 0) {
-            gui.close();
-            break;
-         }
-         //Close the game if there are no balls
-         if (ballCollection.get_amount() == 0)  {
-            gui.close();
-            break;
-         }
+      update_score(d,scorecounter);
+      sprites.drawAllOn(d);
+      //gui.show(d);
+      //Check if the game is paused
+      if (this.keyboard.isPressed("p")) {
+         this.runner.run(new PauseScreen(this.keyboard));
       }
+      // Notify all sprites that time has passed
+      sprites.notifyAllTimePassed();
+      //Close the game if all the blocks are done
+      if (remainingblocks.getValue() == 0) {
+         //gui.close();
+         this.running = false;
+      }
+      //Close the game if there are no balls
+      if (ballCollection.get_amount() == 0)  {
+         //gui.close();
+         this.running = false;
+      }
+   }
+
+
+
+   @Override
+   public boolean shouldStop() {
+      return !this.running;
    }
 }

@@ -5,6 +5,7 @@ import Arkanoid.Engine.Velocity;
 import Arkanoid.Shapes.*;
 import Arkanoid.Shapes.Point;
 import biuoop.GUI;
+import biuoop.KeyboardSensor;
 
 import java.awt.Color;
 
@@ -14,10 +15,11 @@ public class Paddle extends Block {
     Velocity v_left = new Velocity(-MOVESPEED, 0);
     Velocity v_right = new Velocity(MOVESPEED, 0);
     GUI gui;
-    biuoop.KeyboardSensor keyboard;
+    private biuoop.KeyboardSensor keyboard;
 
 
-    public Paddle(double width, double height, Color color, GUI gui) {
+
+    public Paddle(double width, double height, Color color, KeyboardSensor kb) {
         super(
                 new Point(width/2 - width/10, height - height/12),
                 width/5,
@@ -25,7 +27,7 @@ public class Paddle extends Block {
                 color
         );
         this.gui = gui;
-        keyboard = gui.getKeyboardSensor();
+        keyboard = kb;
     }
 
     public void moveOneStepLeft() {

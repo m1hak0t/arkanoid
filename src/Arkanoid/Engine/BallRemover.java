@@ -1,14 +1,14 @@
 package Arkanoid.Engine;
 
-import Arkanoid.Game;
+import Arkanoid.GameLevel;
 import Arkanoid.Interfaces.HitListener;
 import Arkanoid.Sprites.Block;
 
 public class BallRemover implements HitListener {
     Counter remainingBalls;
-    Game game;
+    GameLevel game;
 
-    public BallRemover(Game game, Counter removedBalls) {
+    public BallRemover(GameLevel game, Counter removedBalls) {
         this.remainingBalls = removedBalls;
         this.game = game;
     }

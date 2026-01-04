@@ -1,6 +1,6 @@
 package Arkanoid.Engine;
 
-import Arkanoid.Game;
+import Arkanoid.GameLevel;
 import Arkanoid.Interfaces.HitListener;
 import Arkanoid.Sprites.Block;
 
@@ -8,10 +8,10 @@ import Arkanoid.Sprites.Block;
 // a BlockRemover is in charge of removing blocks from the game, as well as keeping count
 // of the number of blocks that remain.
 public class BlockRemover implements HitListener {
-   private Game game;
+   private GameLevel game;
    private Counter remainingBlocks;
 
-   public BlockRemover(Game game, Counter removedBlocks) {
+   public BlockRemover(GameLevel game, Counter removedBlocks) {
       remainingBlocks = removedBlocks;
       this.game = game;
    }
