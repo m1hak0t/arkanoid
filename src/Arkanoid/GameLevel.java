@@ -1,9 +1,11 @@
 package Arkanoid;
 
 import java.awt.Color;
+import java.util.List;
 
 import Arkanoid.Interfaces.Animation;
 import Arkanoid.Interfaces.Collidable;
+import Arkanoid.Interfaces.LevelInformation;
 import Arkanoid.Interfaces.Sprite;
 
 import Arkanoid.Shapes.Point;
@@ -20,25 +22,40 @@ public class GameLevel implements Animation {
    private GameEnvironment environment;
    private int width;
    private int height;
-   private Arkanoid.Engine.Counter remainingblocks = new Counter();
-   private Arkanoid.Engine.Counter remainingballs = new Counter();
-   private Arkanoid.Engine.Counter scorecounter = new Counter();
-   private BlockRemover listener = new BlockRemover(this,remainingblocks);
-   private BallCollection ballCollection = new BallCollection();
-   private PrintingHitListener print_listener = new PrintingHitListener();
-   private BallRemover ballremover = new BallRemover(this, remainingballs);
-   //private biuoop.DrawSurface d = gui.getDrawSurface();
-   private boolean running = true;
-   private KeyboardSensor keyboard; // <--- Add this field
+   private Counter remainingblocks;
+   private Counter remainingballs;
+   private Counter scorecounter;
+   private BlockRemover blockRemover;
+   private BallRemover ballRemover;
+   private PrintingHitListener printListener;
+   private boolean running;
+   private KeyboardSensor keyboard;
    private AnimationRunner runner;
+   private LevelInformation levelInfo;
 
-   public GameLevel(int width, int height, AnimationRunner runner, KeyboardSensor ks) {
+   public GameLevel(LevelInformation levelInfo, KeyboardSensor ks,
+                    AnimationRunner runner, Counter score, int width, int height) {
       this.width = width;
       this.height = height;
       this.sprites = new SpriteCollection();
       this.environment = new GameEnvironment();
       this.keyboard = ks;
       this.runner = runner;
+      this.levelInfo = levelInfo;
+
+      // Use the passed score counter to maintain score across levels
+      this.scorecounter = score;
+
+      // Create new counters for this level
+      this.remainingblocks = new Counter();
+      this.remainingballs = new Counter();
+
+      // Create listeners
+      this.blockRemover = new BlockRemover(this, remainingblocks);
+      this.ballRemover = new BallRemover(this, remainingballs);
+      this.printListener = new PrintingHitListener();
+
+      this.running = false;
    }
 
    public void addSprite(Sprite s) {
@@ -53,235 +70,205 @@ public class GameLevel implements Animation {
       environment.removeCollidable(c);
    }
 
-   public void removeSprite(Sprite c) {
-      sprites.removeSprite(c);
+   public void removeSprite(Sprite s) {
+      sprites.removeSprite(s);
    }
 
    public void addToGame(Sprite s) {
-      // Add as sprite
       addSprite(s);
-
-      // Check if it's also Collidable before adding
       if (s instanceof Collidable) {
          addCollidable((Collidable) s);
       }
       if (s instanceof Ball) {
-         ballCollection.addBall((Ball) s);
+         // This is important for tracking balls!
+         remainingballs.increase(1);
       }
    }
 
    public void removeFromGame(Sprite s) {
-      // remove as sprite
       removeSprite(s);
       if (s instanceof Collidable) {
          removeCollidable((Collidable) s);
       }
-      if (s instanceof Ball) {
-         ballCollection.removeBall((Ball) s);
-      }
    }
 
-   public void addScore(int i) {
-      scorecounter.increase(i);
+   public void addScore(int points) {
+      scorecounter.increase(points);
+   }
+
+   public int getRemainingBalls() {
+      return remainingballs.getValue();
+   }
+
+   public int getRemainingBlocks() {
+      return remainingblocks.getValue();
    }
 
    public void initialize() {
-      //Create a listener
-
       // Screen dimensions
       final int SCREEN_WIDTH = width;
       final int SCREEN_HEIGHT = height;
       final int WALL_THICKNESS = 10;
 
-      // --- Pastel Color Palette ---
-      Color pastelLavender = Color.decode("#E6E6FA");   // Soft lavender
-      Color pastelPeach = Color.decode("#FFD4B2");      // Peachy cream
-      Color pastelMint = Color.decode("#B4E7CE");       // Mint green
-      Color pastelRose = Color.decode("#FFB6C1");       // Rose pink
-      Color pastelSky = Color.decode("#A4D8E1");        // Sky blue
-      Color pastelLemon = Color.decode("#FFF8B8");      // Lemon yellow
-      Color pastelCoral = Color.decode("#F9A8A8");      // Coral
-      Color pastelPeriwinkle = Color.decode("#CCCCFF"); // Periwinkle
-      Color pastelBlush = Color.decode("#FFC3D5");      // Blush
-      Color pastelSage = Color.decode("#C8E6C9");       // Sage green
-      Color pastelLilac = Color.decode("#DDA0DD");      // Lilac
-
       // --- Create Border Walls ---
 
       // Top wall
       Block topWall = new Block(
-              new Point(0, 0),
+              new Point(0, 20), // Leave space for score display
               SCREEN_WIDTH,
               WALL_THICKNESS,
-              pastelLavender
+              Color.GRAY
       );
       this.addToGame(topWall);
-      //topWall.addHitListener(listener);
-
 
       // Left wall
       Block leftWall = new Block(
-              new Point(0, 0),
+              new Point(0, 20),
               WALL_THICKNESS,
-              SCREEN_HEIGHT,
-              pastelPeriwinkle
+              SCREEN_HEIGHT - 20,
+              Color.GRAY
       );
       this.addToGame(leftWall);
-      //leftWall.addHitListener(listener);
 
       // Right wall
       Block rightWall = new Block(
-              new Point(SCREEN_WIDTH - WALL_THICKNESS, 0),
+              new Point(SCREEN_WIDTH - WALL_THICKNESS, 20),
               WALL_THICKNESS,
-              SCREEN_HEIGHT,
-              pastelPeriwinkle
+              SCREEN_HEIGHT - 20,
+              Color.GRAY
       );
       this.addToGame(rightWall);
-      //rightWall.addHitListener(listener);
 
-      // Bottom wall
+      // Bottom wall (death zone for balls)
       Block bottomWall = new Block(
               new Point(0, SCREEN_HEIGHT - WALL_THICKNESS),
               SCREEN_WIDTH,
               WALL_THICKNESS,
-              pastelLavender
+              Color.RED
       );
       this.addToGame(bottomWall);
-      //Make a wall deadly for balls
-      bottomWall.make_deadly_for_balls();
-      bottomWall.addHitListener(ballremover);
-      //bottomWall.addHitListener(listener);
+      bottomWall.addHitListener(ballRemover);
 
-      // --- Create Brick Layout ---
-
-      // Brick dimensions
-      final int BRICK_WIDTH = 40;  // Approximate from screenshot
-      final int BRICK_HEIGHT = 20;
-      final int START_X = 170;     // Starting X position for first row
-      final int START_Y = 150;     // Starting Y position
-
-      // Row 1: Pastel Lilac gradient
-      Color[] row1Colors = new Color[11];
-      for (int i = 0; i < 11; i++) {
-         row1Colors[i] = pastelLilac;
-      }
-      createBrickRow(START_X, START_Y, BRICK_WIDTH, BRICK_HEIGHT, row1Colors);
-
-      // Row 2: Pastel Coral
-      Color[] row2Colors = new Color[11];
-      for (int i = 0; i < 11; i++) {
-         row2Colors[i] = pastelCoral;
-      }
-      createBrickRow(START_X + BRICK_WIDTH, START_Y + BRICK_HEIGHT,
-              BRICK_WIDTH, BRICK_HEIGHT, row2Colors);
-
-      // Row 3: Pastel Lemon
-      Color[] row3Colors = new Color[11];
-      for (int i = 0; i < 11; i++) {
-         row3Colors[i] = pastelLemon;
-      }
-      createBrickRow(START_X + BRICK_WIDTH * 2, START_Y + BRICK_HEIGHT * 2,
-              BRICK_WIDTH, BRICK_HEIGHT, row3Colors);
-
-      // Row 4: Pastel Sky Blue
-      Color[] row4Colors = new Color[11];
-      for (int i = 0; i < 11; i++) {
-         row4Colors[i] = pastelSky;
-      }
-      createBrickRow(START_X + BRICK_WIDTH * 3, START_Y + BRICK_HEIGHT * 3,
-              BRICK_WIDTH, BRICK_HEIGHT, row4Colors);
-
-      // Row 5: Alternating Pastel Blush and Mint
-      Color[] row5Colors = {pastelBlush, pastelMint, pastelBlush, pastelMint,
-              pastelBlush, pastelMint, pastelBlush, pastelMint,
-              pastelBlush, pastelMint, pastelBlush};
-      createBrickRow(START_X + BRICK_WIDTH * 4, START_Y + BRICK_HEIGHT * 4,
-              BRICK_WIDTH, BRICK_HEIGHT, row5Colors);
-
-      // Row 6: Pastel Sage Green
-      Color[] row6Colors = new Color[11];
-      for (int i = 0; i < 11; i++) {
-         row6Colors[i] = pastelSage;
-      }
-      createBrickRow(START_X + BRICK_WIDTH * 4, START_Y + BRICK_HEIGHT * 5,
-              BRICK_WIDTH, BRICK_HEIGHT, row6Colors);
-
-      // --- Create Paddle ---
-      Paddle paddle = new Paddle(SCREEN_WIDTH, SCREEN_HEIGHT,
-              pastelPeach, keyboard);
-      this.addToGame(paddle);
-
-      // --- Create Ball ---
-      for (int i = 0; i < 25; i++) {
-         Ball ball = new Ball(new Point(640 + 10* i, 400 + i), 10, pastelRose, environment);  // Rose pink ball
-         ball.setVelocity(Velocity.fromAngleAndSpeed(90 + 10 * i, 5));  // Start moving up
-         this.addToGame(ball);
-      }
-   }
-
-   /**
-    * Helper method to create a row of bricks
-    */
-   private void createBrickRow(int startX, int startY, int width, int height,
-                               Color[] colors) {
-      for (int i = 0; i < colors.length; i++) {
-         Block brick = new Block(
-                 new Point(startX + i * width, startY),
-                 width,
-                 height,
-                 colors[i]
-
-         );
-         brick.addHitListener(listener);
-         this.addToGame(brick);
+      // --- Add blocks from LevelInformation ---
+      List<Block> blocks = levelInfo.blocks();
+      for (Block block : blocks) {
+         block.addHitListener(blockRemover);
+         block.addHitListener(printListener);
+         this.addToGame(block);
          remainingblocks.increase(1);
       }
+
+      // --- Create Paddle from LevelInformation ---
+      Paddle paddle = new Paddle(
+              SCREEN_WIDTH,
+              SCREEN_HEIGHT,
+              Color.ORANGE,
+              keyboard,
+              levelInfo.paddleWidth(),
+              levelInfo.paddleSpeed()
+      );
+      this.addToGame(paddle);
    }
 
-   private void update_score(DrawSurface d,Counter counter) {
-      String message = "SCORE: " + counter.getValue();
-      d.setColor(Color.black);
-      d.drawText(30, 45, message, 20);
-      if (remainingblocks.getValue() == 0) {
-         counter.increase(100);
+   private void createBallsOnTopOfPaddle() {
+      int numBalls = levelInfo.numberOfBalls();
+      List<Velocity> velocities = levelInfo.initialBallVelocities();
+
+      int ballRadius = 10;
+      int paddleY = height - 80; // Position above paddle (higher up)
+      int spacing = 25;
+
+      // If only one ball, center it. If multiple, spread them out
+      int startX;
+      if (numBalls == 1) {
+         startX = width / 2;
+      } else {
+         int totalWidth = (numBalls - 1) * spacing;
+         startX = (width - totalWidth) / 2;
       }
+
+      for (int i = 0; i < numBalls; i++) {
+         Point ballCenter = new Point(startX + (i * spacing), paddleY);
+
+         // Create ball using your Ball constructor
+         Ball ball = new Ball(ballCenter, ballRadius, Color.WHITE, environment);
+
+         // Set velocity from level info
+         ball.setVelocity(velocities.get(i));
+
+         // Add to game (addToGame will increment remainingballs)
+         this.addToGame(ball);
+
+         // Debug print
+         System.out.println("Created ball " + i + " at (" + ballCenter.getX() + ", " + ballCenter.getY() + ")");
+      }
+
+      System.out.println("Total balls created: " + remainingballs.getValue());
    }
 
-   /**
-    * Run the game -- start the animation loop
-    */
+   private void drawScoreAndLevelName(DrawSurface d) {
+      // Background bar for score display
+      d.setColor(Color.LIGHT_GRAY);
+      d.fillRectangle(0, 0, width, 20);
 
+      // Level name
+      String levelNameText = "Level: " + levelInfo.levelName();
+      d.setColor(Color.BLACK);
+      d.drawText(width / 2 - 50, 15, levelNameText, 15);
+
+      // Score
+      String scoreText = "Score: " + scorecounter.getValue();
+      d.drawText(30, 15, scoreText, 15);
+
+      // Lives/Balls remaining
+      String ballsText = "Balls: " + remainingballs.getValue();
+      d.drawText(width - 100, 15, ballsText, 15);
+   }
 
    @Override
    public void doOneFrame(DrawSurface d) {
-      d.setColor(Color.BLUE);  // Blue background
-      d.fillRectangle(0, 0, width, height);
+      // Draw background from level info
+      levelInfo.getBackground().drawOn(d);
 
-      update_score(d,scorecounter);
+      // Draw score bar and info
+      drawScoreAndLevelName(d);
+
+      // Draw all sprites
       sprites.drawAllOn(d);
-      //gui.show(d);
-      //Check if the game is paused
+
+      // Check for pause
       if (this.keyboard.isPressed("p")) {
          this.runner.run(new PauseScreen(this.keyboard));
       }
+
       // Notify all sprites that time has passed
       sprites.notifyAllTimePassed();
-      //Close the game if all the blocks are done
+
+      // Check win condition (all blocks cleared)
       if (remainingblocks.getValue() == 0) {
-         //gui.close();
+         scorecounter.increase(100); // Bonus for clearing level
          this.running = false;
       }
-      //Close the game if there are no balls
-      if (ballCollection.get_amount() == 0)  {
-         //gui.close();
+
+      // Check lose condition (no balls left)
+      if (remainingballs.getValue() == 0) {
          this.running = false;
       }
    }
-
-
 
    @Override
    public boolean shouldStop() {
       return !this.running;
+   }
+
+   public void run() {
+      // Create balls at start of level
+      this.createBallsOnTopOfPaddle();
+
+      // Start the level
+      this.running = true;
+
+      // Use runner to run this animation
+      this.runner.run(this);
    }
 }

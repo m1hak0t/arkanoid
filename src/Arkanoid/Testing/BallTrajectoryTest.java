@@ -15,7 +15,7 @@ public class BallTrajectoryTest {
     @Before
     public void setUp() {
         // Create a ball at origin with radius 5
-        ball = new Ball(new Point(100, 100), 5, Color.RED);
+        ball = new Ball(new Point(100, 100), 20, Color.RED);
     }
     
     @Test

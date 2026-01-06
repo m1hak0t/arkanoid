@@ -2,49 +2,65 @@ package Arkanoid.Sprites;
 
 import Arkanoid.Engine.Ball;
 import Arkanoid.Engine.Velocity;
-import Arkanoid.Shapes.*;
+import Arkanoid.Interfaces.Collidable;
+import Arkanoid.Interfaces.Sprite;
+import Arkanoid.Shapes.Line;
 import Arkanoid.Shapes.Point;
-import biuoop.GUI;
+import biuoop.DrawSurface;
 import biuoop.KeyboardSensor;
 
-import java.awt.Color;
-
+import java.awt.*;
 
 public class Paddle extends Block {
-    double MOVESPEED = 10;
-    Velocity v_left = new Velocity(-MOVESPEED, 0);
-    Velocity v_right = new Velocity(MOVESPEED, 0);
-    GUI gui;
-    private biuoop.KeyboardSensor keyboard;
+    private double MOVESPEED;
+    private Velocity v_left;
+    private Velocity v_right;
+    private KeyboardSensor keyboard;
+    private double screenWidth;
+    private double paddleWidth;
 
-
-
-    public Paddle(double width, double height, Color color, KeyboardSensor kb) {
+    public Paddle(double screenWidth, double screenHeight, Color color,
+                  KeyboardSensor keyboard, int paddleWidth, int paddleSpeed) {
         super(
-                new Point(width/2 - width/10, height - height/12),
-                width/5,
-                height/30,
+                new Point(screenWidth/2 - paddleWidth/2, screenHeight - screenHeight/17),
+                paddleWidth,
+                screenHeight/17,
                 color
         );
-        this.gui = gui;
-        keyboard = kb;
+
+        this.MOVESPEED = paddleSpeed;
+        this.v_left = new Velocity(-MOVESPEED, 0);
+        this.v_right = new Velocity(MOVESPEED, 0);
+        this.keyboard = keyboard;
+        this.screenWidth = screenWidth;
+        this.paddleWidth = paddleWidth;
     }
 
     public void moveOneStepLeft() {
-        Point p = super.shape.r_upperleft;
-        super.shape.MoveToSpecificPoint(v_left.applyToPoint(p));
+        Point p = super.shape.getUpperLeft();
+        Point newPos = v_left.applyToPoint(p);
+
+        // Don't move past left wall (assume wall is at x=10)
+        if (newPos.getX() >= 10) {
+            super.shape.MoveToSpecificPoint(newPos);
+        }
     }
 
     public void moveOneStepRight() {
-        Point p = super.shape.r_upperleft;
-        super.shape.MoveToSpecificPoint(v_right.applyToPoint(p));
+        Point p = super.shape.getUpperLeft();
+        Point newPos = v_right.applyToPoint(p);
+
+        // Don't move past right wall (assume wall is at screenWidth - 10)
+        if (newPos.getX() + paddleWidth <= screenWidth - 10) {
+            super.shape.MoveToSpecificPoint(newPos);
+        }
     }
 
     public void move() {
-        if (keyboard.isPressed("left")) {
+        if (keyboard.isPressed(KeyboardSensor.LEFT_KEY)) {
             moveOneStepLeft();
         }
-        if (keyboard.isPressed("right")) {
+        if (keyboard.isPressed(KeyboardSensor.RIGHT_KEY)) {
             moveOneStepRight();
         }
     }
@@ -86,8 +102,8 @@ public class Paddle extends Block {
                 paddleRight = temp;
             }
 
-            double paddleWidth = paddleRight - paddleLeft;
-            double segmentWidth = paddleWidth / 5.0;
+            double width = paddleRight - paddleLeft;
+            double segmentWidth = width / 5.0;
 
             // Determine which region (1-5) the collision occurred in
             double relativeX = collisionPoint.getX() - paddleLeft;
@@ -100,6 +116,7 @@ public class Paddle extends Block {
             double speed = currentVelocity.getSpeed();
 
             // Apply different angles based on region
+            // Angle system: 0° = left, 90° = up, 180° = right, 270° = down
             switch (region) {
                 case 1: // Far left - bounce at 60° (sharp left)
                     return Velocity.fromAngleAndSpeed(-150, speed);
